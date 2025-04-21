@@ -86,3 +86,4 @@ python3 usb_to_screen.py --device /dev/video0 --local --width 640 --height 480 -
 2. 若遇到設備無法使用，請檢查是否已正確連接並安裝驅動程式。
 3. 若需進一步調整參數，請參考各程式內的說明。
 
+Test
