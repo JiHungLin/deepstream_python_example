@@ -96,7 +96,7 @@ def main():
     # Parse command line arguments
     parser = argparse.ArgumentParser(description="將RTSP串流轉換成RTMP串流")
     parser.add_argument("--rtsp-url", required=True, help="RTSP 來源網址，例如 rtsp://192.168.1.123:8554/stream")
-    parser.add_argument("--rtsp-url-o", required=True, help="RTMP 目標網址，例如 rtmp://192.168.1.123/live/stream")
+    parser.add_argument("--rtmp-url", required=True, help="RTMP 目標網址，例如 rtmp://192.168.1.123/live/stream")
     parser.add_argument("--bitrate", type=int, default=DEFAULT_BITRATE, help=f"影像位元率 (kbps)，預設 {DEFAULT_BITRATE}")
     parser.add_argument("--width", type=int, default=MUXER_OUTPUT_WIDTH, help=f"輸出影像寬度，預設 {MUXER_OUTPUT_WIDTH}")
     parser.add_argument("--height", type=int, default=MUXER_OUTPUT_HEIGHT, help=f"輸出影像高度，預設 {MUXER_OUTPUT_HEIGHT}")
@@ -104,13 +104,13 @@ def main():
     args = parser.parse_args()
     
     rtsp_url = args.rtsp_url
-    rtsp_url_o = args.rtsp_url_o
+    rtmp_url = args.rtmp_url
     bitrate = args.bitrate
     width = args.width
     height = args.height
     
     print(f"RTSP 來源: {rtsp_url}")
-    print(f"RTSP 目標: {rtsp_url_o}")
+    print(f"RTMP 目標: {rtmp_url}")
     print(f"設定影像大小: {width}x{height}, 位元率: {bitrate}kbps")
     
     # 初始化 GStreamer
@@ -183,24 +183,27 @@ def main():
         sys.stderr.write(" 無法建立 h264parse\n")
         return -1
     
-
-    # RTSP串流
-    rtsp_sink = Gst.ElementFactory.make("rtspclientsink", "rtsp_sink")  # 創建RTSP客戶端輸出元素
-    if not rtsp_sink:  # 如果元素創建失敗
-        print("無法建立rtspclientsink元素，可能需要安裝對應的GStreamer外掛")  # 輸出錯誤訊息
-        return None  # 返回空值
-    rtsp_sink.set_property("location", rtsp_url_o)  # 設定RTSP串流的URL位置
-
-
-
-
+    # 建立 FLV muxer 和 RTMP sink
+    flvmux = Gst.ElementFactory.make("flvmux", "flvmux")
+    if not flvmux:
+        sys.stderr.write(" 無法建立 flvmux\n")
+        return -1
+    
+    rtmpsink = Gst.ElementFactory.make("rtmpsink", "rtmpsink")
+    if not rtmpsink:
+        sys.stderr.write(" 無法建立 rtmpsink\n")
+        return -1
+    
+    rtmpsink.set_property("location", rtmp_url)
+    
     # 將元件添加到管道中
     pipeline.add(source_bin)
     pipeline.add(streammux)
     pipeline.add(nvvidconv)
     pipeline.add(encoder)
     pipeline.add(h264parser)
-    pipeline.add(rtsp_sink)
+    pipeline.add(flvmux)
+    pipeline.add(rtmpsink)
     
     # 連接 RTSP 來源到 streammux
     padname = "sink_0"
@@ -220,7 +223,8 @@ def main():
     streammux.link(nvvidconv)
     nvvidconv.link(encoder)
     encoder.link(h264parser)
-    h264parser.link(rtsp_sink)
+    h264parser.link(flvmux)
+    flvmux.link(rtmpsink)
     
     # 建立事件循環並監聽 GStreamer 訊息
     loop = GLib.MainLoop()

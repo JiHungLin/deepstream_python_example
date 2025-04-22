@@ -10,7 +10,7 @@
 
 ### 使用方式
 ```bash
-python3 rtsp_to_rtsp.py --source_rtsp <來源RTSP_URL> --target_rtsp <目標RTSP_URL>
+python3 rtsp_to_rtsp.py --source_rtsp rtsp://<來源RTSP_URL> --target_rtsp rtsp://<目標RTSP_URL>
 ```
 
 ---

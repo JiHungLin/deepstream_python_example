@@ -137,19 +137,5 @@ def main(args):
     except KeyboardInterrupt:
         print("接收到中斷信號，清理...")
     
-    # 清理
-if __name__ == "__main__":
-    # Handle import errors with helpful message
-    try:
-        import gi
-        gi.require_version('Gst', '1.0')
-        from gi.repository import Gst, GLib
-    except ImportError:
-        print("Error: GStreamer Python bindings not found!")
-        print("Please install using: sudo apt-get install python3-gst-1.0")
-        sys.exit(1)
-        
-    sys.exit(main(sys.argv))
-
 if __name__ == "__main__":
     sys.exit(main(sys.argv))
