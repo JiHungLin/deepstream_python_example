@@ -81,6 +81,31 @@ python3 usb_to_screen.py --device /dev/video0 --local --width 640 --height 480 -
 
 ---
 
+## 5. `rtsp_ai_to_rtsp.py`
+### 功能
+接收 RTSP 串流，經 DeepStream AI 物件偵測後，將結果（含標註）串流輸出為另一 RTSP 串流。
+
+### 使用方式
+```bash
+python3 rtsp_ai_to_rtsp.py --input-rtsp rtsp://<來源RTSP_URL> --output-rtsp rtsp://<目標RTSP_URL>
+```
+
+#### 主要參數說明
+- `--input-rtsp`：輸入 RTSP 串流網址（必填）
+- `--output-rtsp`：輸出 RTSP 串流網址（必填）
+- `--config-file`：推論模型設定檔路徑，預設為 `dstest1_pgie_config.txt`
+- `--gie`：推論引擎，`nvinfer` 或 `nvinferserver`，預設為 `nvinfer`
+- `--codec`：串流編碼格式，`H264` 或 `H265`，預設為 `H264`
+- `--bitrate`：編碼位元率（預設 4000000）
+- `--rtsp-ts`：啟用時會顯示 RTSP NTP 時間戳
+
+#### 範例
+```bash
+python3 rtsp_ai_to_rtsp.py --input-rtsp rtsp://192.168.1.10/stream1 --output-rtsp rtsp://127.0.0.1:8554/ai_stream --config-file dstest1_pgie_config.txt --codec H264 --bitrate 4000000
+```
+
+---
+
 ## 注意事項
 1. 確保已安裝必要的 GStreamer 插件與 Python 套件。
 2. 若遇到設備無法使用，請檢查是否已正確連接並安裝驅動程式。
